@@ -29,12 +29,16 @@ class RouteOptimizer:
         self.C = data['matrix']
         
     def optimize(self):
-        optimum_route,minimum_cost = cvrp.vrp(self.V,len(self.S),self.C)
-        print(optimum_route )
+        self.optimum_route,self.minimum_total_cost = cvrp.vrp(self.V,len(self.S),self.C,self.S)
+        print(self.optimum_route )
         
     def run(self):
         self.read_json()
         self.optimize()
+        
+    def visualize_graph(self):
+        print("This function visualizaes thr graph")
+            
         
     
 

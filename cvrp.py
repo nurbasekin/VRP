@@ -57,13 +57,20 @@ def calculate_shortest_route(V,C,k,K,V_p):
     return opt_route,c_min
         
 
-def vrp(V,n,C):
+def vrp(V,n,C,S):
+    
+    # V: Set of Vertices
+    # n: Number of remaning vehicles
+    # C: Cost matrix
+    # S: Start vertices for each vehicle
+    
     
     c_min = 10e6
     opt_route = []
+    minimum_route_cost = []
     
     if n == 1:
-        route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),0)
+        route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),S[n-1])
         print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
 
         opt_route.append(route_n)       
@@ -76,20 +83,22 @@ def vrp(V,n,C):
         # For each combination calcuate cost
         for sel in sel_comb:
             V_n = [i for idx,i in enumerate(V) if sel[idx]]
-            route_n,c_n = calculate_shortest_route(V_n,C,len(V_n),len(V_n),0)
+            route_n,c_n = calculate_shortest_route(V_n,C,len(V_n),len(V_n),S[n-1])
             print("Vehicle: %d | Cost :%f | Set: "  % (n,c_n) +  str(V_n) + " | Optimal Route: " + str(route_n))
 
             
             V_r = [i for idx,i in enumerate(V) if not sel[idx]]
-            route_r , c_r = vrp(V_r,n-1,C)
+            route_r , c_r = vrp(V_r,n-1,C,S)
 
             c_t = c_n + c_r
                     
             if(c_t < c_min):
                 c_min = c_t
                 opt_route = []
-                opt_route.append(route_r)
+                for route in route_r:
+                    opt_route.append(route)   
                 opt_route.append(route_n)
+                minimum_route_cost.append(c_min)
 
             
             if(n == 3):
