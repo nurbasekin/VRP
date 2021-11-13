@@ -10,8 +10,6 @@ import math as math
 import matplotlib.pyplot as plt
 import itertools
 
-
-
 def calculate_shortest_route(V,C,k,K,V_p):
     
     # V : Set of vertices
@@ -20,14 +18,16 @@ def calculate_shortest_route(V,C,k,K,V_p):
     # K : Total number of vertices
     # V_p: Previous vertex
 
-    c_min = 10e20
+    c_min = 10e6 * len(V)
     opt_route = []
     
     if k == 1:
         V_n = V[0]
-        c_min = C[V_p,V_n];
+        c_min = C[V_p][V_n];
+        
+        # Returning back to depot case
+        # c_min = C[V_p,V_n] + C[V_n,0]; 
         route = [*V]
-        # print("%d Current Node: %d | Cost :%f | Previous Node: %d"  % (k,V_n,c_min,V_p) )        
         return route, c_min 
         
         
@@ -37,7 +37,7 @@ def calculate_shortest_route(V,C,k,K,V_p):
         if(len(V) == K):
             V_p = 0
             
-        c_n = C[V_p,V_n]
+        c_n = C[V_p][V_n]
         V_r = [i for idx,i in enumerate(V) if not i == V_n]
         route, c_r = calculate_shortest_route(V_r,C,k-1,K,V_n)
         c_t = c_n + c_r
@@ -45,28 +45,28 @@ def calculate_shortest_route(V,C,k,K,V_p):
         if c_t < c_min:
             c_min = c_t
             opt_route = [*route]
-            # opt_route.append(route)
             opt_route.append(V_n)
             
         
-        if k == K:
-            print("------------------------------------------")
-            print("Cost: %f" % c_min)
-            print(opt_route)
-            print("------------------------------------------")
+        # if k == K:
+        #     print("------------------------------------------")
+        #     print("Cost: %f" % c_min)
+        #     print(opt_route)
+        #     print("------------------------------------------")
+        
     return opt_route,c_min
         
 
-def vrp(V,n):
+def vrp(V,n,C):
     
-    c_min = 100
+    c_min = 10e6
     opt_route = []
     
     if n == 1:
-        c_min = calculate_shortest_route(V)
-        print("Number of Vehicles: %d | Cost :%f | Current Route: "  % (n,c_min) +  str(V) )
+        route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),0)
+        print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
 
-        opt_route.append(V)        
+        opt_route.append(route_n)       
         return opt_route , c_min
     else:
         
@@ -76,20 +76,20 @@ def vrp(V,n):
         # For each combination calcuate cost
         for sel in sel_comb:
             V_n = [i for idx,i in enumerate(V) if sel[idx]]
-            c_n = calculate_shortest_route(V_n)
-            print("Number of Vehicles: %d | Cost :%f | Current Route: "  % (n,c_n) +  str(V_n) )
+            route_n,c_n = calculate_shortest_route(V_n,C,len(V_n),len(V_n),0)
+            print("Vehicle: %d | Cost :%f | Set: "  % (n,c_n) +  str(V_n) + " | Optimal Route: " + str(route_n))
 
             
             V_r = [i for idx,i in enumerate(V) if not sel[idx]]
-            route , c_r = vrp(V_r,n-1)
+            route_r , c_r = vrp(V_r,n-1,C)
 
             c_t = c_n + c_r
                     
             if(c_t < c_min):
                 c_min = c_t
                 opt_route = []
-                opt_route.append(route)
-                opt_route.append(V_n)
+                opt_route.append(route_r)
+                opt_route.append(route_n)
 
             
             if(n == 3):
@@ -109,11 +109,25 @@ def vrp(V,n):
 
 
 # Generating Vertices
-V  = [0,1,2,3,4]
-P =  [(0,0),(3,8),(7,4),(17,45), (9,30)]
-E =  [(i,j) for i in V for j in V]
-C = {(i,j): math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V}
-V  = [1,2,3,4]
-r, c = vrp(V,3)
-print(c)
+# V  = [0,1,2,3,4]
+# P =  [(25,44),(3,1),(50,40),(17,45), (90,30)]
+# E =  [(i,j) for i in V for j in V]
+# # C = {(i,j): math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V}
+# C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
+# C = np.reshape(C,(5,5))
+# V  = [1,2,3,4]
+# optimum_route, c = vrp(V,3,C)
+
+# # Visualization of the Vertices
+# for i in range (len(P)):
+#     if i == 0:
+#         plt.scatter(P[i][0],P[i][1],c = 'r', marker = 's')    
+#     else:
+#         plt.scatter(P[i][0],P[i][1],c = 'k', marker = 's')
+#     plt.annotate('$V_%d$' % (i),(P[i][0],P[i][1]+0.1))
+    
+# for route in optimum_route:
+#     V_p = 0
+#     for V_n in route:
+#         plt.plot([P[V_p][0],P[V_n][0]],[P[V_p][1],P[V_n][1]])
             
