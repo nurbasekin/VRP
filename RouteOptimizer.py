@@ -39,7 +39,6 @@ class RouteOptimizer:
         C = self.C
         
         optimum_route,minimum_total_cost,minimum_route_cost = cvrp.vrp(V,len(S),C,S)
-        # optimum_route.reverse()
         for i in range(len(self.vehicles)):
             optimum_route[i].reverse()
             self.vehicles[i]['route'] = optimum_route[i]
