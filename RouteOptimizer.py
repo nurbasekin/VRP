@@ -5,6 +5,8 @@ Created on Sat Nov 13 09:55:14 2021
 @author: ekin.nurbas
 """
 
+
+
 import json
 import cvrp
 
@@ -18,26 +20,51 @@ class RouteOptimizer:
         data = json.load(f)
         f.close()
         
-        self.V = []
-        for job in data['jobs']:
-            self.V.append(job['location_index'])
         
-        self.S = []
-        for vehicle in data['vehicles']:
-            self.S.append(vehicle['start_index'])
-            
+        self.vehicles = data['vehicles']
+        self.jobs = data['jobs']
         self.C = data['matrix']
         
-    def optimize(self):
-        self.optimum_route,self.minimum_total_cost = cvrp.vrp(self.V,len(self.S),self.C,self.S)
-        print(self.optimum_route )
+        
+    def optimizer(self):
+        
+        V = []
+        for job in self.jobs:
+            V.append(job['location_index'])
+        
+        S = []
+        for vehicle in self.vehicles:  
+            S.append(vehicle['start_index'])
+            
+        C = self.C
+        
+        optimum_route,minimum_total_cost,minimum_route_cost = cvrp.vrp(V,len(S),C,S)
+        # optimum_route.reverse()
+        for i in range(len(self.vehicles)):
+            optimum_route[i].reverse()
+            self.vehicles[i]['route'] = optimum_route[i]
+            self.vehicles[i]['jobs'] = [j['id'] for j in self.jobs for v in optimum_route[i] if j['location_index'] == v]
+            self.vehicles[i]['cost'] = minimum_route_cost[i]
+        
         
     def run(self):
         self.read_json()
-        self.optimize()
+        self.optimizer()
+        self.visualize_graph()
+        self.write_json()
         
     def visualize_graph(self):
-        print("This function visualizaes thr graph")
+        for vehicle in self.vehicles:
+            print("Vehicle ID: %d " % vehicle['id'])
+            print("Start Point: %d" % vehicle['start_index'])
+            print("Optimum Route: " + str(vehicle['route']))
+            print("Jobs: " + str(vehicle['jobs']))
+            print("Total Cost: %f" % vehicle['cost'])
+            print("---------------------------------------")
+    
+    def write_json(self):
+        with open('output.json', 'w') as f:
+            json.dump(self.vehicles, f)
             
         
     

@@ -34,8 +34,8 @@ def calculate_shortest_route(V,C,k,K,V_p):
     
     for V_n in V:
         
-        if(len(V) == K):
-            V_p = 0
+        # if(len(V) == K):
+        #     V_p = 
             
         c_n = C[V_p][V_n]
         V_r = [i for idx,i in enumerate(V) if not i == V_n]
@@ -72,9 +72,9 @@ def vrp(V,n,C,S):
     if n == 1:
         route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),S[n-1])
         print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
-
+        minimum_route_cost.append(c_min)
         opt_route.append(route_n)       
-        return opt_route , c_min
+        return opt_route , c_min, minimum_route_cost
     else:
         
         # Calculate Combinations of V
@@ -84,21 +84,26 @@ def vrp(V,n,C,S):
         for sel in sel_comb:
             V_n = [i for idx,i in enumerate(V) if sel[idx]]
             route_n,c_n = calculate_shortest_route(V_n,C,len(V_n),len(V_n),S[n-1])
-            print("Vehicle: %d | Cost :%f | Set: "  % (n,c_n) +  str(V_n) + " | Optimal Route: " + str(route_n))
+            print("Vehicle: %d | Cost :%f | Previous Vertex: %d |Set: "  % (n,c_n,S[n-1]) +  str(V_n) + " | Optimal Route: " + str(route_n))
 
             
             V_r = [i for idx,i in enumerate(V) if not sel[idx]]
-            route_r , c_r = vrp(V_r,n-1,C,S)
+            route_r , c_r, min_route_cost_r = vrp(V_r,n-1,C,S)
 
             c_t = c_n + c_r
                     
             if(c_t < c_min):
                 c_min = c_t
+                
                 opt_route = []
                 for route in route_r:
                     opt_route.append(route)   
                 opt_route.append(route_n)
-                minimum_route_cost.append(c_min)
+                
+                minimum_route_cost = []
+                for min_cost in min_route_cost_r:
+                    minimum_route_cost.append(min_cost) 
+                minimum_route_cost.append(c_n)
 
             
             if(n == 3):
@@ -110,33 +115,6 @@ def vrp(V,n,C,S):
 
                 
     
-    return opt_route , c_min
+    return opt_route , c_min , minimum_route_cost
 
-       
-
-
-
-
-# Generating Vertices
-# V  = [0,1,2,3,4]
-# P =  [(25,44),(3,1),(50,40),(17,45), (90,30)]
-# E =  [(i,j) for i in V for j in V]
-# # C = {(i,j): math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V}
-# C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
-# C = np.reshape(C,(5,5))
-# V  = [1,2,3,4]
-# optimum_route, c = vrp(V,3,C)
-
-# # Visualization of the Vertices
-# for i in range (len(P)):
-#     if i == 0:
-#         plt.scatter(P[i][0],P[i][1],c = 'r', marker = 's')    
-#     else:
-#         plt.scatter(P[i][0],P[i][1],c = 'k', marker = 's')
-#     plt.annotate('$V_%d$' % (i),(P[i][0],P[i][1]+0.1))
-    
-# for route in optimum_route:
-#     V_p = 0
-#     for V_n in route:
-#         plt.plot([P[V_p][0],P[V_n][0]],[P[V_p][1],P[V_n][1]])
-            
+      
