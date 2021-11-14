@@ -5,6 +5,8 @@ Created on Sun Nov 14 23:38:31 2021
 @author: ekin.nurbas
 """
 import random
+import math
+import numpy as np
 
 def calculate_shortest_route(V,C,k,K,V_p):
     
@@ -68,8 +70,7 @@ def generate(V,n,K):
     return population
 
 
-def crossover(parents):
-    
+def crossover(parents):    
     offspring = []
     for i in range(2):
         o = []
@@ -80,35 +81,75 @@ def crossover(parents):
     return offspring
 
 
-def replace(parents,offspring,index):
+def replace(parents,route_parent,cost_parent,cost_total_parent , offspring, route_offspring,cost_offspring, cost_total_offspring, index):
     parents[index] = offspring
+    route_parent[index]  = route_offspring
+    cost_parent[index]  = cost_offspring
+    cost_total_parent[index]  = cost_total_offspring
     return parents
 
-def evaluate(parents,V,n):
+def evaluate(parents,V,C,n):
     
+    r = []
+    c = []
+    c_total = []
     for p in parents:
+        r_p = []
+        c_p = []
+        c_total_p = 0;
         for i in range(1,n+1):
             V_i = [V[j] for j in range(len(p)) if p[j] == i]
+            r_i,c_i = calculate_shortest_route(V_i,C,len(V_i),len(V_i),0)
+            r_p.append(r_i)
+            c_p.append(c_i)
+            c_total_p += c_i
+        r.append(r_p)
+        c.append(c_p)
+        c_total.append(c_total_p)
+        
+    return r,c,c_total
             
-def ga(V,n,k):
+def ga(V,C,n,K):
     print("Genetic Algorithm for VRP")
     
-    K = 100
     parents = generate(V,n,K)
     
-    for iteration in range(100):
+    r_parents , c_parents, c_total_parents = evaluate(parents, V, C, n)
+
+    for iteration in range(3):
         
-        r_parents , c_parents = evaluate(parents, V, n)
+        sorted_parent_index = np.argsort(c_total_parents)
+        eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
+        
+        print(parents)
+        print(c_total_parents)
         p1_index = random.randint(0,len(parents[0]))
         p2_index = random.randint(0,len(parents[0]))
         while p1_index == p2_index:
             p2_index = random.randint(0,len(parents[0]))
         
-        offsprings = crossover([parents[p1_index],parents[p1_index]])
-        
-        
+        offsprings = crossover([parents[p1_index],parents[p2_index]])
+        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,n)
+        # sorted_offspring_index = np.argsort(c_total_offsprings)
+        # offsprings = offsprings[sorted_offspring_index]
+        # r_offsprings = r_offsprings[sorted_offspring_index]
+        # c_offsprings = c_offsprings[sorted_offspring_index]
+        # c_total_offsprings = c_total_offsprings[sorted_offspring_index]
 
-                                    
+        print(offsprings)
+        print(c_total_offsprings)
         
+        for i in range(2):
+            if(c_total_offsprings[i] < c_total_parents[i]):
+                parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[i],r_offsprings[i], c_offsprings[i],c_total_offsprings[i],eliminated_parent_index[i])
             
+        
+        
+        
+V = [0,1,2,3,4]
+P = [(0,0),(5,10),(24,78),(44,56),(57,14)]
+C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
+C = np.reshape(C,(5,5))       
+V = [1,2,3,4]    
+ga(V,C,3,5)
     

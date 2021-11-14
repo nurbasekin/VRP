@@ -10,7 +10,7 @@ Created on Sat Nov 13 09:55:14 2021
 import json
 import cvrp
 
-class RouteOptimizer:
+class BruteForce_RouteOptimizer:
     
     def __init__(self,json_file):
         self.json_file = json_file
@@ -68,5 +68,5 @@ class RouteOptimizer:
         
     
 
-RO = RouteOptimizer('my_test.json')
+RO = BruteForce_RouteOptimizer('my_test.json')
 RO.run()
