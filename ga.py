@@ -130,8 +130,8 @@ def ga(V,C,n,K):
         sorted_parent_index = np.argsort(c_total_parents)
         eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
         
-        print(parents)
-        print(c_total_parents)
+        # print(parents)
+        # print(c_total_parents)
         
         offsprings = crossover(parents)
         r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,n)
@@ -140,8 +140,8 @@ def ga(V,C,n,K):
         sorted_offspring_index = np.argsort(c_total_offsprings)
 
 
-        print(offsprings)
-        print(c_total_offsprings)
+        # print(offsprings)
+        # print(c_total_offsprings)
         
         for i in range(2):
             offspring_index = sorted_offspring_index[i]
@@ -151,12 +151,26 @@ def ga(V,C,n,K):
                 parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[offspring_index],r_offsprings[offspring_index], c_offsprings[offspring_index],c_total_offsprings[offspring_index],parent_index)
             
         
-        print("-------------------------------")
-        
+        # print("-------------------------------")
+    
+    #Select Minimum 
+    sorted_parent_index = np.argsort(c_total_parents)
+    min_parent_index = sorted_parent_index[0]
+    optimum_route = r_parents[min_parent_index]
+    c_min_total = c_total_parents[min_parent_index]
+    c_min = c_parents[min_parent_index]
+    
+    print("Optimum Route : " + str(optimum_route))
+    print("Cost: " + str(c_min_total))
+    
+# Generating Vertices
 V = [0,1,2,3,4]
-P = [(0,0),(5,10),(24,78),(44,56),(57,14)]
+P = [(25,44),(3,1),(50,40),(17,45), (90,30)]
+E = [(i,j) for i in V for j in V]
+S = [1,4,3]
+
 C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
-C = np.reshape(C,(5,5))       
-V = [1,2,3,4]    
+C = np.reshape(C,(5,5))
+V  = [1,2,3,4] 
 ga(V,C,3,200)
     
