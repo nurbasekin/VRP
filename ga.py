@@ -95,9 +95,9 @@ def replace(parents,route_parent,cost_parent,cost_total_parent , offspring, rout
     route_parent[index]  = route_offspring
     cost_parent[index]  = cost_offspring
     cost_total_parent[index]  = cost_total_offspring
-    return parents
+    return parents,route_parent,cost_parent,cost_total_parent
 
-def evaluate(parents,V,C,n):
+def evaluate(parents,V,C,S,n):
     
     r = []
     c = []
@@ -108,7 +108,7 @@ def evaluate(parents,V,C,n):
         c_total_p = 0;
         for i in range(1,n+1):
             V_i = [V[j] for j in range(len(p)) if p[j] == i]
-            r_i,c_i = calculate_shortest_route(V_i,C,len(V_i),len(V_i),0)
+            r_i,c_i = calculate_shortest_route(V_i,C,len(V_i),len(V_i),S[i-1])
             r_p.append(r_i)
             c_p.append(c_i)
             c_total_p += c_i
@@ -118,14 +118,13 @@ def evaluate(parents,V,C,n):
         
     return r,c,c_total
             
-def ga(V,C,n,K):
-    print("Genetic Algorithm for VRP")
+def ga(V,C,S,n,K):
     
     parents = generate(V,n,K)
     
-    r_parents , c_parents, c_total_parents = evaluate(parents, V, C, n)
+    r_parents , c_parents, c_total_parents = evaluate(parents, V, C,S, n)
 
-    for iteration in range(200):
+    for iteration in range(100):
         
         sorted_parent_index = np.argsort(c_total_parents)
         eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
@@ -134,7 +133,7 @@ def ga(V,C,n,K):
         # print(c_total_parents)
         
         offsprings = crossover(parents)
-        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,n)
+        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,S,n)
 
         
         sorted_offspring_index = np.argsort(c_total_offsprings)
@@ -148,9 +147,10 @@ def ga(V,C,n,K):
             parent_index = eliminated_parent_index[1-i]
             
             if(c_total_offsprings[offspring_index] < c_total_parents[parent_index]):
-                parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[offspring_index],r_offsprings[offspring_index], c_offsprings[offspring_index],c_total_offsprings[offspring_index],parent_index)
+                parents,r_parents,c_parents,c_total_parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[offspring_index],r_offsprings[offspring_index], c_offsprings[offspring_index],c_total_offsprings[offspring_index],parent_index)
             
-        
+        # print(c_total_parents)
+
         # print("-------------------------------")
     
     #Select Minimum 
@@ -160,17 +160,17 @@ def ga(V,C,n,K):
     c_min_total = c_total_parents[min_parent_index]
     c_min = c_parents[min_parent_index]
     
-    print("Optimum Route : " + str(optimum_route))
-    print("Cost: " + str(c_min_total))
     
-# Generating Vertices
-V = [0,1,2,3,4]
-P = [(25,44),(3,1),(50,40),(17,45), (90,30)]
-E = [(i,j) for i in V for j in V]
-S = [1,4,3]
+    return optimum_route , c_min_total, c_min
+    
+# # Generating Vertices
+# V = [0,1,2,3,4]
+# P = [(25,44),(3,1),(50,40),(17,45), (90,30)]
+# E = [(i,j) for i in V for j in V]
+# S = [1,4,3]
 
-C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
-C = np.reshape(C,(5,5))
-V  = [1,2,3,4] 
-ga(V,C,3,200)
+# C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
+# C = np.reshape(C,(5,5))
+# V  = [1,2,3,4] 
+# ga(V,C,S,3,100)
     

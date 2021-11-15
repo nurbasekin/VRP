@@ -71,7 +71,7 @@ def vrp(V,n,C,S):
     
     if n == 1:
         route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),S[n-1])
-        print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
+        # print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
         minimum_route_cost.append(c_min)
         opt_route.append(route_n)       
         return opt_route , c_min, minimum_route_cost
@@ -84,7 +84,7 @@ def vrp(V,n,C,S):
         for sel in sel_comb:
             V_n = [i for idx,i in enumerate(V) if sel[idx]]
             route_n,c_n = calculate_shortest_route(V_n,C,len(V_n),len(V_n),S[n-1])
-            print("Vehicle: %d | Cost :%f | Previous Vertex: %d |Set: "  % (n,c_n,S[n-1]) +  str(V_n) + " | Optimal Route: " + str(route_n))
+            # print("Vehicle: %d | Cost :%f | Previous Vertex: %d |Set: "  % (n,c_n,S[n-1]) +  str(V_n) + " | Optimal Route: " + str(route_n))
 
             
             V_r = [i for idx,i in enumerate(V) if not sel[idx]]
@@ -105,15 +105,6 @@ def vrp(V,n,C,S):
                     minimum_route_cost.append(min_cost) 
                 minimum_route_cost.append(c_n)
 
-            
-            if(n == 3):
-                print("----------------------------------------------------")
-                print("Optimum Routes:")
-                print(opt_route)
-                print("Cost: %f" % c_min)
-                print("----------------------------------------------------")
-
-                
     
     return opt_route , c_min , minimum_route_cost
 
