@@ -70,12 +70,21 @@ def generate(V,n,K):
     return population
 
 
-def crossover(parents):    
+def crossover(parents):
+    selected_parents = []
+    p1_index = random.randint(0,len(parents[0]))
+    selected_parents.append(parents[p1_index])
+    p2_index = random.randint(0,len(parents[0]))
+    while p1_index == p2_index:
+        p2_index = random.randint(0,len(parents[0]))
+    selected_parents.append(parents[p2_index])
+
+    
     offspring = []
     for i in range(2):
         o = []
         for j in range(len(parents[0])):
-            o.append(parents[(j+i)%2][j])
+            o.append(selected_parents[(j+i)%2][j])
         offspring.append(o)
         
     return offspring
@@ -116,40 +125,38 @@ def ga(V,C,n,K):
     
     r_parents , c_parents, c_total_parents = evaluate(parents, V, C, n)
 
-    for iteration in range(3):
+    for iteration in range(200):
         
         sorted_parent_index = np.argsort(c_total_parents)
         eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
         
         print(parents)
         print(c_total_parents)
-        p1_index = random.randint(0,len(parents[0]))
-        p2_index = random.randint(0,len(parents[0]))
-        while p1_index == p2_index:
-            p2_index = random.randint(0,len(parents[0]))
         
-        offsprings = crossover([parents[p1_index],parents[p2_index]])
+        offsprings = crossover(parents)
         r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,n)
-        # sorted_offspring_index = np.argsort(c_total_offsprings)
-        # offsprings = offsprings[sorted_offspring_index]
-        # r_offsprings = r_offsprings[sorted_offspring_index]
-        # c_offsprings = c_offsprings[sorted_offspring_index]
-        # c_total_offsprings = c_total_offsprings[sorted_offspring_index]
+
+        
+        sorted_offspring_index = np.argsort(c_total_offsprings)
+
 
         print(offsprings)
         print(c_total_offsprings)
         
         for i in range(2):
-            if(c_total_offsprings[i] < c_total_parents[i]):
-                parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[i],r_offsprings[i], c_offsprings[i],c_total_offsprings[i],eliminated_parent_index[i])
+            offspring_index = sorted_offspring_index[i]
+            parent_index = eliminated_parent_index[1-i]
+            
+            if(c_total_offsprings[offspring_index] < c_total_parents[parent_index]):
+                parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[offspring_index],r_offsprings[offspring_index], c_offsprings[offspring_index],c_total_offsprings[offspring_index],parent_index)
             
         
-        
+        print("-------------------------------")
         
 V = [0,1,2,3,4]
 P = [(0,0),(5,10),(24,78),(44,56),(57,14)]
 C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
 C = np.reshape(C,(5,5))       
 V = [1,2,3,4]    
-ga(V,C,3,5)
+ga(V,C,3,200)
     
