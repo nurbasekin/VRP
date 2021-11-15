@@ -41,12 +41,13 @@ class RouteOptimizer:
         self.write_json()
         
     def visualize_graph(self):
+        print("*****************************************")
         for vehicle in self.vehicles:
             print("Vehicle ID: %d " % vehicle['id'])
             print("Start Point: %d" % vehicle['start_index'])
             print("Optimum Route: " + str(vehicle['route']))
             print("Jobs: " + str(vehicle['jobs']))
-            print("Total Cost: %f" % vehicle['cost'])
+            print("Route Cost: %f" % vehicle['cost'])
             print("---------------------------------------")
     
     def write_json(self):
@@ -72,11 +73,13 @@ class BruteForce(RouteOptimizer):
             
         C = self.C
         
+        
         optimum_route,minimum_total_cost,minimum_route_cost = cvrp.vrp(V,len(S),C,S)
+                
         for i in range(len(self.vehicles)):
             optimum_route[i].reverse()
             self.vehicles[i]['route'] = optimum_route[i]
-            self.vehicles[i]['jobs'] = [j['id'] for j in self.jobs for v in optimum_route[i] if j['location_index'] == v]
+            self.vehicles[i]['jobs'] = [j['id']  for v in optimum_route[i] for j in self.jobs if j['location_index'] == v]
             self.vehicles[i]['cost'] = minimum_route_cost[i]
         
         
@@ -104,14 +107,14 @@ class GeneticAlgortihm(RouteOptimizer):
         for i in range(len(self.vehicles)):
             optimum_route[i].reverse()
             self.vehicles[i]['route'] = optimum_route[i]
-            self.vehicles[i]['jobs'] = [j['id'] for j in self.jobs for v in optimum_route[i] if j['location_index'] == v]
+            self.vehicles[i]['jobs'] = [j['id']  for v in optimum_route[i] for j in self.jobs if j['location_index'] == v]
             self.vehicles[i]['cost'] = minimum_route_cost[i]
         
 
-BF = BruteForce('my_test.json')
-BF.run()
+# BF = BruteForce('my_test.json')
+# BF.run()
 
 
-GA = GeneticAlgortihm('my_test.json',100)
-GA.run()
+# GA = GeneticAlgortihm('my_test.json',100)
+# GA.run()
 
