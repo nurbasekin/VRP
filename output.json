@@ -1,1 +1,0 @@
-[{"id": 1, "start_index": 0, "capacity": [4], "route": [9, 3, 4, 7, 8, 5], "jobs": [7, 1, 2, 5, 6, 3], "cost": 3516}, {"id": 2, "start_index": 1, "capacity": [6], "route": [], "jobs": [], "cost": 0.0}, {"id": 3, "start_index": 2, "capacity": [6], "route": [6], "jobs": [4], "cost": 226}]

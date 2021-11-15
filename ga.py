@@ -7,6 +7,7 @@ Created on Sun Nov 14 23:38:31 2021
 import random
 import math
 import numpy as np
+import sys
 
 def calculate_shortest_route(V,C,k,K,V_p):
     
@@ -24,7 +25,8 @@ def calculate_shortest_route(V,C,k,K,V_p):
         c_min = C[V_p][V_n];
         
         # Returning back to depot case
-        # c_min = C[V_p,V_n] + C[V_n,0]; 
+        c_min = C[V_p][V_n] + C[V_n][0]; 
+        
         route = [*V]
         return route, c_min 
         
@@ -97,7 +99,7 @@ def replace(parents,route_parent,cost_parent,cost_total_parent , offspring, rout
     cost_total_parent[index]  = cost_total_offspring
     return parents,route_parent,cost_parent,cost_total_parent
 
-def evaluate(parents,V,C,S,n):
+def evaluate(parents,V,C,S,D,L,n):
     
     r = []
     c = []
@@ -112,19 +114,23 @@ def evaluate(parents,V,C,S,n):
             r_p.append(r_i)
             c_p.append(c_i)
             c_total_p += c_i
+            
+            if sum([D[i] for i in V_i]) > L[i-1]:
+                c_total_p = sys.maxsize
+                
         r.append(r_p)
         c.append(c_p)
         c_total.append(c_total_p)
         
     return r,c,c_total
             
-def ga(V,C,S,n,K):
+def ga(V,C,S,D,L,n,K):
     
     parents = generate(V,n,K)
     
-    r_parents , c_parents, c_total_parents = evaluate(parents, V, C,S, n)
+    r_parents , c_parents, c_total_parents = evaluate(parents, V, C,S,D,L, n)
 
-    for iteration in range(100):
+    for iteration in range(20):
         
         sorted_parent_index = np.argsort(c_total_parents)
         eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
@@ -133,7 +139,7 @@ def ga(V,C,S,n,K):
         # print(c_total_parents)
         
         offsprings = crossover(parents)
-        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,S,n)
+        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,S,D,L,n)
 
         
         sorted_offspring_index = np.argsort(c_total_offsprings)

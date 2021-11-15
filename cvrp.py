@@ -5,10 +5,8 @@ Created on Fri Nov 12 13:00:19 2021
 @author: ekin.nurbas
 """
 
-import numpy as np
-import math as math
-import matplotlib.pyplot as plt
 import itertools
+import sys
 
 def calculate_shortest_route(V,C,k,K,V_p):
     
@@ -18,7 +16,7 @@ def calculate_shortest_route(V,C,k,K,V_p):
     # K : Total number of vertices
     # V_p: Previous vertex
 
-    c_min = 10e6 * len(V)
+    c_min = sys.maxsize * len(V)
     opt_route = []
     
     if k == 1:
@@ -26,7 +24,8 @@ def calculate_shortest_route(V,C,k,K,V_p):
         c_min = C[V_p][V_n];
         
         # Returning back to depot case
-        # c_min = C[V_p,V_n] + C[V_n,0]; 
+        c_min = C[V_p][V_n] + C[V_n][0]; 
+        
         route = [*V]
         return route, c_min 
         
@@ -57,7 +56,7 @@ def calculate_shortest_route(V,C,k,K,V_p):
     return opt_route,c_min
         
 
-def vrp(V,n,C,S):
+def vrp(V,n,C,S,D,L):
     
     # V: Set of Vertices
     # n: Number of remaning vehicles
@@ -65,13 +64,16 @@ def vrp(V,n,C,S):
     # S: Start vertices for each vehicle
     
     
-    c_min = 10e6
+    c_min = sys.maxsize
     opt_route = []
     minimum_route_cost = []
     
     if n == 1:
         route_n , c_min = calculate_shortest_route(V,C,len(V),len(V),S[n-1])
         # print("Vehicle: %d | Cost :%f | Set: "  % (n,c_min) +  str(V) + " | Optimal Route: " + str(route_n))
+        if sum([D[i] for i in route_n]) > L[n-1]:
+            c_min = sys.maxsize
+                
         minimum_route_cost.append(c_min)
         opt_route.append(route_n)       
         return opt_route , c_min, minimum_route_cost
@@ -88,10 +90,13 @@ def vrp(V,n,C,S):
 
             
             V_r = [i for idx,i in enumerate(V) if not sel[idx]]
-            route_r , c_r, min_route_cost_r = vrp(V_r,n-1,C,S)
+            route_r , c_r, min_route_cost_r = vrp(V_r,n-1,C,S,D,L)
 
             c_t = c_n + c_r
-                    
+            
+            if sum([D[i] for i in route_n]) > L[n-1]:
+                c_t = sys.maxsize
+                                
             if(c_t < c_min):
                 c_min = c_t
                 
