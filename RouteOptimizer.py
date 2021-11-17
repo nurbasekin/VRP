@@ -8,16 +8,17 @@ Created on Sat Nov 13 09:55:14 2021
 
 
 import json
-import cvrp
+import bf
 import ga
 import time
 import numpy as np
 
 class RouteOptimizer:
     
-    def __init__(self,input_json_file,output_json_file):
+    def __init__(self,input_json_file,output_json_file,capacitated):
         self.input_json_file = input_json_file
         self.output_json_file = output_json_file
+        self.capacitated = capacitated
     
     def read_json(self):
         f = open(self.input_json_file,)
@@ -29,8 +30,7 @@ class RouteOptimizer:
         self.jobs = data['jobs']
         self.C = data['matrix']
         
-        
-        
+               
     def run(self):
         self.read_json()
         
@@ -39,13 +39,14 @@ class RouteOptimizer:
         t_end = time.time_ns()
         t_total = (t_end - t_start) 
         print("Execution Time %f milliseconds" % (t_total / 1000000) )
-        self.visualize_graph()
+        self.print_results()
         self.write_json()
         
-    def visualize_graph(self):
+    def print_results(self):
         print("*****************************************")
         for vehicle in self.vehicles:
             print("Vehicle ID: %d " % vehicle['id'])
+            print("Capacity: %d" % vehicle['capacity'][0])
             print("Start Point: %d" % vehicle['start_index'])
             print("Optimum Route: " + str(vehicle['route']))
             print("Jobs: " + str(vehicle['jobs']))
@@ -60,8 +61,8 @@ class RouteOptimizer:
 
 class BruteForce(RouteOptimizer):
     
-    def __init__(self,input_json_file,output_json_file):
-        super().__init__(input_json_file,output_json_file)
+    def __init__(self,input_json_file,output_json_file,capacitated):
+        super().__init__(input_json_file,output_json_file,capacitated)
         
         
         
@@ -81,7 +82,7 @@ class BruteForce(RouteOptimizer):
         C = self.C
         
         
-        optimum_route,minimum_total_cost,minimum_route_cost = cvrp.vrp(V,len(S),C,S,D,L)
+        optimum_route,minimum_total_cost,minimum_route_cost = bf.bfsolver(V,len(S),C,S,D,L,self.capacitated)
         
         routes = {}
         total_delivery_duration = 0
@@ -93,7 +94,7 @@ class BruteForce(RouteOptimizer):
             route['jobs'] = [str(j['id'])  for v in optimum_route[i] for j in self.jobs if v == j['location_index']]
             route['delivery_duration'] = minimum_route_cost[i]
             routes[str(self.vehicles[i]['id'])] = route
-            total_delivery_duration =+ minimum_route_cost[i]
+            total_delivery_duration += minimum_route_cost[i]
             self.vehicles[i]['route'] = optimum_route[i]
             self.vehicles[i]['jobs'] = [j['id']  for v in optimum_route[i] for j in self.jobs if v == j['location_index']]
             self.vehicles[i]['cost'] = minimum_route_cost[i]
@@ -104,8 +105,8 @@ class BruteForce(RouteOptimizer):
         
 class GeneticAlgortihm(RouteOptimizer):
 
-    def __init__(self,input_json_file,output_json_file,K):
-        super().__init__(input_json_file,output_json_file)
+    def __init__(self,input_json_file,output_json_file,K,capacitated):
+        super().__init__(input_json_file,output_json_file,capacitated)
         self.K = K
     
         
@@ -126,7 +127,7 @@ class GeneticAlgortihm(RouteOptimizer):
             
         C = self.C
         
-        optimum_route,minimum_total_cost,minimum_route_cost = ga.ga(V,C,S,D,L,len(S),self.K)
+        optimum_route,minimum_total_cost,minimum_route_cost = ga.gasolver(V,C,S,D,L,len(S),self.K,self.capacitated)
         
         routes = {}
         total_delivery_duration = 0
@@ -138,7 +139,7 @@ class GeneticAlgortihm(RouteOptimizer):
             route['jobs'] = [str(j['id'])  for v in optimum_route[i] for j in self.jobs if v == j['location_index']]
             route['delivery_duration'] = minimum_route_cost[i]
             routes[str(self.vehicles[i]['id'])] = route
-            total_delivery_duration =+ minimum_route_cost[i]            
+            total_delivery_duration += minimum_route_cost[i]            
             self.vehicles[i]['route'] = optimum_route[i]
             self.vehicles[i]['jobs'] = [j['id']  for v in optimum_route[i] for j in self.jobs if v == j['location_index']]
             self.vehicles[i]['cost'] = minimum_route_cost[i]
@@ -148,10 +149,4 @@ class GeneticAlgortihm(RouteOptimizer):
         self.result['routes'] = routes
         
 
-# BF = BruteForce('my_test.json')
-# BF.run()
-
-
-# GA = GeneticAlgortihm('my_test.json',100)
-# GA.run()
 

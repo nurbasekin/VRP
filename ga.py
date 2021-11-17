@@ -9,7 +9,7 @@ import math
 import numpy as np
 import sys
 
-def calculate_shortest_route(V,C,k,K,V_p):
+def calculate_shortest_route(V,C,k,K,V_p,capacitated):
     
     # V : Set of vertices
     # C : Cost Dictionary i.e. C[i,j] is the cost for V[i] -> V[j]
@@ -25,7 +25,10 @@ def calculate_shortest_route(V,C,k,K,V_p):
         c_min = C[V_p][V_n];
         
         # Returning back to depot case
-        c_min = C[V_p][V_n] + C[V_n][0]; 
+        if(capacitated):
+            c_min = C[V_p][V_n] + C[V_n][0]
+        else:
+            c_min = C[V_p][V_n]
         
         route = [*V]
         return route, c_min 
@@ -34,12 +37,9 @@ def calculate_shortest_route(V,C,k,K,V_p):
     
     for V_n in V:
         
-        # if(len(V) == K):
-        #     V_p = 
-            
         c_n = C[V_p][V_n]
         V_r = [i for idx,i in enumerate(V) if not i == V_n]
-        route, c_r = calculate_shortest_route(V_r,C,k-1,K,V_n)
+        route, c_r = calculate_shortest_route(V_r,C,k-1,K,V_n,capacitated)
         c_t = c_n + c_r
         
         if c_t < c_min:
@@ -47,12 +47,6 @@ def calculate_shortest_route(V,C,k,K,V_p):
             opt_route = [*route]
             opt_route.append(V_n)
             
-        
-        # if k == K:
-        #     print("------------------------------------------")
-        #     print("Cost: %f" % c_min)
-        #     print(opt_route)
-        #     print("------------------------------------------")
         
     return opt_route,c_min
         
@@ -99,7 +93,7 @@ def replace(parents,route_parent,cost_parent,cost_total_parent , offspring, rout
     cost_total_parent[index]  = cost_total_offspring
     return parents,route_parent,cost_parent,cost_total_parent
 
-def evaluate(parents,V,C,S,D,L,n):
+def evaluate(parents,V,C,S,D,L,n,capacitated):
     
     r = []
     c = []
@@ -110,12 +104,13 @@ def evaluate(parents,V,C,S,D,L,n):
         c_total_p = 0;
         for i in range(1,n+1):
             V_i = [V[j] for j in range(len(p)) if p[j] == i]
-            r_i,c_i = calculate_shortest_route(V_i,C,len(V_i),len(V_i),S[i-1])
+            r_i,c_i = calculate_shortest_route(V_i,C,len(V_i),len(V_i),S[i-1],capacitated)
             r_p.append(r_i)
             c_p.append(c_i)
             c_total_p += c_i
             
-            if sum([D[i] for i in V_i]) > L[i-1]:
+            
+            if capacitated and sum([D[i] for i in V_i]) > L[i-1]:
                 c_total_p = sys.maxsize
                 
         r.append(r_p)
@@ -124,29 +119,23 @@ def evaluate(parents,V,C,S,D,L,n):
         
     return r,c,c_total
             
-def ga(V,C,S,D,L,n,K):
+def gasolver(V,C,S,D,L,n,K,capacitated):
     
     parents = generate(V,n,K)
     
-    r_parents , c_parents, c_total_parents = evaluate(parents, V, C,S,D,L, n)
+    r_parents , c_parents, c_total_parents = evaluate(parents, V, C,S,D,L, n,capacitated)
 
     for iteration in range(20):
         
         sorted_parent_index = np.argsort(c_total_parents)
         eliminated_parent_index = sorted_parent_index[V[len(V)-2:len(V)]]
         
-        # print(parents)
-        # print(c_total_parents)
-        
         offsprings = crossover(parents)
-        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,S,D,L,n)
+        r_offsprings, c_offsprings,c_total_offsprings = evaluate(offsprings,V,C,S,D,L,n,capacitated)
 
         
         sorted_offspring_index = np.argsort(c_total_offsprings)
 
-
-        # print(offsprings)
-        # print(c_total_offsprings)
         
         for i in range(2):
             offspring_index = sorted_offspring_index[i]
@@ -154,10 +143,7 @@ def ga(V,C,S,D,L,n,K):
             
             if(c_total_offsprings[offspring_index] < c_total_parents[parent_index]):
                 parents,r_parents,c_parents,c_total_parents = replace(parents,r_parents,c_parents,c_total_parents, offsprings[offspring_index],r_offsprings[offspring_index], c_offsprings[offspring_index],c_total_offsprings[offspring_index],parent_index)
-            
-        # print(c_total_parents)
-
-        # print("-------------------------------")
+        
     
     #Select Minimum 
     sorted_parent_index = np.argsort(c_total_parents)
@@ -169,14 +155,5 @@ def ga(V,C,S,D,L,n,K):
     
     return optimum_route , c_min_total, c_min
     
-# # Generating Vertices
-# V = [0,1,2,3,4]
-# P = [(25,44),(3,1),(50,40),(17,45), (90,30)]
-# E = [(i,j) for i in V for j in V]
-# S = [1,4,3]
 
-# C = [math.sqrt(pow(P[i][0] - P[j][0],2) + pow(P[i][1] - P[j][1],2)) for i in V for j in V]
-# C = np.reshape(C,(5,5))
-# V  = [1,2,3,4] 
-# ga(V,C,S,3,100)
     
